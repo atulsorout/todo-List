@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React Custom Hooks</title>
+  <!-- React and ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    // Custom Hook for Form State Management
+    function useForm(initialState) {
+      const [values, setValues] = React.useState(initialState);
+
+      const handleChange = (e) => {
+        const { name, value } = e.target;
+        setValues((prevValues) => ({
+          ...prevValues,
+          [name]: value,
+        }));
+      };
+
+      return [values, handleChange];
+    }
+
+    // Component Using the Custom Hook
+    function FormComponent() {
+      const [formValues, handleChange] = useForm({ name: "", email: "" });
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        alert(`Submitted Values: Name - ${formValues.name}, Email - ${formValues.email}`);
+      };
+
+      return (
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label>Name:</label>
+            <input
+              type="text"
+              name="name"
+              value={formValues.name}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <label>Email:</label>
+            <input
+              type="email"
+              name="email"
+              value={formValues.email}
+              onChange={handleChange}
+            />
+          </div>
+          <button type="submit">Submit</button>
+        </form>
+      );
+    }
+
+    // Render the Component
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<FormComponent />);
+  </script>
+</body>
+</html>
