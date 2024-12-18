@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React useToggleItems Hook</title>
+  <!-- React and ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    // Custom Hook: useToggleItems
+    function useToggleItems(initialValue, initialPosition = 0) {
+      if (!Array.isArray(initialValue) || initialValue.length === 0) {
+        throw new Error("The first parameter must be a non-empty array.");
+      }
+      
+      // Ensure the initial position is valid
+      const validPosition = initialPosition >= 0 && initialPosition < initialValue.length 
+                            ? initialPosition 
+                            : 0;
+
+      const [currentIndex, setCurrentIndex] = React.useState(validPosition);
+
+      // Function to toggle the state
+      const toggleState = () => {
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % initialValue.length);
+      };
+
+      // Return the current item and the toggle function
+      return [initialValue[currentIndex], toggleState];
+    }
+
+    // App Component to Demonstrate useToggleItems
+    function App() {
+      const [state, toggleState] = useToggleItems(["A", "B", "C"], 1); // Initial state is "B"
+
+      return (
+        <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", marginTop: "50px" }}>
+          <h1>React useToggleItems Hook</h1>
+          <h2>Current State: {state}</h2>
+          <button onClick={toggleState} style={buttonStyle}>
+            Toggle State
+          </button>
+        </div>
+      );
+    }
+
+    // Button Styling
+    const buttonStyle = {
+      padding: "10px 20px",
+      fontSize: "16px",
+      marginTop: "20px",
+      cursor: "pointer",
+      borderRadius: "5px",
+    };
+
+    // Render the App Component
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>
