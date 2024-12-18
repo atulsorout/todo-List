@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React Custom Hook - Timer</title>
+  <!-- React and ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    // Custom Hook: useTimer
+    function useTimer() {
+      const [timer, setTimer] = React.useState(0); // Timer value in seconds
+      const [isRunning, setIsRunning] = React.useState(false); // Is timer running?
+      const timerRef = React.useRef(null); // Reference to store the interval ID
+
+      // Start the timer
+      const startTimer = () => {
+        if (!isRunning) {
+          setIsRunning(true);
+          timerRef.current = setInterval(() => {
+            setTimer((prev) => prev + 1);
+          }, 1000);
+        }
+      };
+
+      // Stop the timer
+      const stopTimer = () => {
+        if (isRunning) {
+          clearInterval(timerRef.current);
+          setIsRunning(false);
+        }
+      };
+
+      // Reset the timer
+      const resetTimer = () => {
+        clearInterval(timerRef.current);
+        setTimer(0);
+        setIsRunning(false);
+      };
+
+      // Cleanup interval on unmount
+      React.useEffect(() => {
+        return () => clearInterval(timerRef.current);
+      }, []);
+
+      return { timer, isRunning, startTimer, stopTimer, resetTimer };
+    }
+
+    // Timer Component to Use the Custom Hook
+    function TimerComponent() {
+      const { timer, isRunning, startTimer, stopTimer, resetTimer } = useTimer();
+
+      return (
+        <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", marginTop: "50px" }}>
+          <h1>React Timer with Custom Hook</h1>
+          <h2>Time Elapsed: {timer} seconds</h2>
+          <div>
+            <button onClick={startTimer} disabled={isRunning} style={buttonStyle}>
+              Start
+            </button>
+            <button onClick={stopTimer} disabled={!isRunning} style={buttonStyle}>
+              Stop
+            </button>
+            <button onClick={resetTimer} style={buttonStyle}>
+              Reset
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // Button Style for Consistency
+    const buttonStyle = {
+      padding: "10px 20px",
+      margin: "5px",
+      fontSize: "16px",
+      cursor: "pointer",
+      borderRadius: "5px",
+    };
+
+    // Render the Timer Component
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<TimerComponent />);
+  </script>
+</body>
+</html>
