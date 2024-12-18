@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React Map Application</title>
+  <!-- React and ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Mapbox CSS -->
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+  <style>
+    #root {
+      height: 100vh;
+      width: 100%;
+    }
+    .controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    // Import MapboxGL via CDN
+    const MAPBOX_TOKEN = "YOUR_MAPBOX_ACCESS_TOKEN"; // Replace with your Mapbox access token.
+
+    // React Map Application
+    function App() {
+      const [viewport, setViewport] = React.useState({
+        latitude: 37.7749, // Default to San Francisco
+        longitude: -122.4194,
+        zoom: 10,
+      });
+
+      const [searchQuery, setSearchQuery] = React.useState("");
+      const [poiData, setPoiData] = React.useState([]);
+      const [currentLocation, setCurrentLocation] = React.useState(null);
+
+      // Fetch Points of Interest (POIs) using Mapbox Geocoding API
+      const fetchPOIs = React.useCallback(async () => {
+        if (!searchQuery) return;
+
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${MAPBOX_TOKEN}`
+        );
+        const data = await response.json();
+        setPoiData(data.features || []);
+      }, [searchQuery]);
+
+      // Get User's Current Location
+      const getCurrentLocation = React.useCallback(() => {
+        if (!navigator.geolocation) {
+          alert("Geolocation is not supported by your browser.");
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            setCurrentLocation({ latitude, longitude });
+            setViewport((prev) => ({ ...prev, latitude, longitude }));
+          },
+          (error) => {
+            alert("Unable to retrieve your location.");
+            console.error(error);
+          }
+        );
+      }, []);
+
+      // Optimize rendering of search results using React.memo
+      const SearchResults = React.memo(({ results }) => {
+        return (
+          <div>
+            <h4>Search Results</h4>
+            <ul>
+              {results.map((result, index) => (
+                <li key={index}>{result.place_name}</li>
+              ))}
+            </ul>
+          </div>
+        );
+      });
+
+      return (
+        <div style={{ height: "100%", width: "100%" }}>
+          <div className="controls">
+            <button onClick={getCurrentLocation}>Get Current Location</button>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search for a location"
+            />
+            <button onClick={fetchPOIs}>Search</button>
+          </div>
+          <ReactMapGL
+            {...viewport}
+            width="100%"
+            height="100%"
+            mapStyle="mapbox://styles/mapbox/streets-v11"
+            onViewportChange={setViewport}
+            mapboxAccessToken={MAPBOX_TOKEN}
+          >
+            {currentLocation && (
+              <Marker
+                latitude={currentLocation.latitude}
+                longitude={currentLocation.longitude}
+                offsetLeft={-20}
+                offsetTop={-10}
+              >
+                <div style={{ color: "red" }}>📍</div>
+              </Marker>
+            )}
+            {poiData.map((poi, index) => (
+              <Marker
+                key={index}
+                latitude={poi.center[1]}
+                longitude={poi.center[0]}
+                offsetLeft={-20}
+                offsetTop={-10}
+              >
+                <div style={{ color: "blue" }}>📍</div>
+              </Marker>
+            ))}
+          </ReactMapGL>
+          <SearchResults results={poiData} />
+        </div>
+      );
+    }
+
+    // Render the App
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+  <!-- Mapbox GL JS -->
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+  <!-- React Map GL -->
+  <script src="https://unpkg.com/react-map-gl@^6.0.0/dist/umd/react-map-gl.js"></script>
+</body>
+</html>
