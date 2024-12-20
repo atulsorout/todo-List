@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feedback System</title>
+  <!-- React and ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <!-- Babel for JSX support -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+  <!-- TypeScript for type-safe development -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/typescript/4.9.5/typescript.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <!-- React App -->
+  <script type="text/babel">
+    // Feedback Form Component
+    const FeedbackForm = () => {
+      const [feedback, setFeedback] = React.useState([]);
+      const [formData, setFormData] = React.useState({
+        name: '',
+        rating: '',
+        comments: '',
+      });
+
+      const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+      };
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        setFeedback([...feedback, formData]);
+        setFormData({ name: '', rating: '', comments: '' });
+        alert('Thank you for your feedback!');
+      };
+
+      return (
+        <div>
+          <h2>Feedback Form</h2>
+          <form onSubmit={handleSubmit}>
+            <div>
+              <label>Name: </label>
+              <input type="text" name="name" value={formData.name} onChange={handleChange} required />
+            </div>
+            <div>
+              <label>Rating: </label>
+              <select name="rating" value={formData.rating} onChange={handleChange} required>
+                <option value="">Select Rating</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+            <div>
+              <label>Comments: </label>
+              <textarea name="comments" value={formData.comments} onChange={handleChange} required></textarea>
+            </div>
+            <button type="submit">Submit</button>
+          </form>
+          <h3>Submitted Feedback</h3>
+          <ul>
+            {feedback.map((item, index) => (
+              <li key={index}>
+                {item.name} rated {item.rating}/5: {item.comments}
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    };
+
+    // Render App
+    ReactDOM.render(<FeedbackForm />, document.getElementById('root'));
+  </script>
+</body>
+</html>
