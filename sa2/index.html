@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feedback Form with React Router and ContextAPI</title>
+  
+  <!-- React and ReactDOM CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.min.js"></script>
+  
+  <!-- React Router DOM CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-router-dom/6.10.0/umd/react-router-dom.min.js"></script>
+
+  <!-- Babel CDN for JSX support -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { createContext, useState, useContext } = React;
+    const { BrowserRouter, Routes, Route, Link, useNavigate } = ReactRouterDOM;
+
+    // Context for global state management
+    const FeedbackContext = createContext();
+
+    const FeedbackProvider = ({ children }) => {
+      const [feedbackData, setFeedbackData] = useState({
+        name: '',
+        email: '',
+        rating: '',
+        feedback: '',
+      });
+
+      return (
+        <FeedbackContext.Provider value={{ feedbackData, setFeedbackData }}>
+          {children}
+        </FeedbackContext.Provider>
+      );
+    };
+
+    // Feedback Form Component
+    const FeedbackForm = () => {
+      const { feedbackData, setFeedbackData } = useContext(FeedbackContext);
+      const [formData, setFormData] = useState(feedbackData);
+      const [error, setError] = useState('');
+      const navigate = useNavigate();
+
+      const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
+      };
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        const { name, email, rating, feedback } = formData;
+
+        // Simple form validation
+        if (!name || !email || !rating || !feedback) {
+          setError('Please fill out all fields before submitting.');
+          return;
+        }
+
+        setFeedbackData(formData);
+        navigate('/summary');
+      };
+
+      return (
+        <div>
+          <h1>Feedback Form</h1>
+          {error && <p style={{ color: 'red' }}>{error}</p>}
+          <form onSubmit={handleSubmit}>
+            <div>
+              <label>Name:</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label>Email:</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label>Rating (1-5):</label>
+              <input
+                type="number"
+                name="rating"
+                value={formData.rating}
+                onChange={handleChange}
+                min="1"
+                max="5"
+              />
+            </div>
+            <div>
+              <label>Feedback:</label>
+              <textarea
+                name="feedback"
+                value={formData.feedback}
+                onChange={handleChange}
+              />
+            </div>
+            <button type="submit">Submit</button>
+          </form>
+        </div>
+      );
+    };
+
+    // Feedback Summary Component
+    const FeedbackSummary = () => {
+      const { feedbackData } = useContext(FeedbackContext);
+
+      return (
+        <div>
+          <h1>Feedback Summary</h1>
+          <p><strong>Name:</strong> {feedbackData.name}</p>
+          <p><strong>Email:</strong> {feedbackData.email}</p>
+          <p><strong>Rating:</strong> {feedbackData.rating}</p>
+          <p><strong>Feedback:</strong> {feedbackData.feedback}</p>
+          <Link to="/">Go back to the form</Link>
+        </div>
+      );
+    };
+
+    // App component with routing
+    const App = () => {
+      return (
+        <FeedbackProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<FeedbackForm />} />
+              <Route path="/summary" element={<FeedbackSummary />} />
+            </Routes>
+          </BrowserRouter>
+        </FeedbackProvider>
+      );
+    };
+
+    // Render the App component
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
