@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React Feedback Form</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    const FeedbackForm = () => {
+      const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        rating: '',
+        feedback: '',
+      });
+      const [submitted, setSubmitted] = useState(false);
+
+      const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          [name]: value,
+        }));
+      };
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+
+        // Simple validation
+        const { name, email, rating, feedback } = formData;
+        if (!name || !email || !rating || !feedback) {
+          alert('Please fill out all fields before submitting.');
+          return;
+        }
+
+        setSubmitted(true);
+      };
+
+      const handleReset = () => {
+        setFormData({ name: '', email: '', rating: '', feedback: '' });
+        setSubmitted(false);
+      };
+
+      return (
+        <div>
+          {submitted ? (
+            <div>
+              <h2>Thank you for your feedback!</h2>
+              <p><strong>Name:</strong> {formData.name}</p>
+              <p><strong>Email:</strong> {formData.email}</p>
+              <p><strong>Rating:</strong> {formData.rating}</p>
+              <p><strong>Feedback:</strong> {formData.feedback}</p>
+              <button onClick={handleReset}>Submit Another Feedback</button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit}>
+              <div>
+                <label>
+                  Name:
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                  />
+                </label>
+              </div>
+              <div>
+                <label>
+                  Email:
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                  />
+                </label>
+              </div>
+              <div>
+                <label>
+                  Rating:
+                  <input
+                    type="number"
+                    name="rating"
+                    value={formData.rating}
+                    onChange={handleChange}
+                    min="1"
+                    max="5"
+                  />
+                </label>
+              </div>
+              <div>
+                <label>
+                  Feedback:
+                  <textarea
+                    name="feedback"
+                    value={formData.feedback}
+                    onChange={handleChange}
+                  ></textarea>
+                </label>
+              </div>
+              <button type="submit">Submit</button>
+            </form>
+          )}
+        </div>
+      );
+    };
+
+    ReactDOM.render(<FeedbackForm />, document.getElementById('root'));
+  </script>
+</body>
+</html>
