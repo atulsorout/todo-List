@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Feedback System</title>
+  
+  <!-- React and ReactDOM CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.min.js"></script>
+  
+  <!-- Redux CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.2.2/redux.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-redux/7.2.6/react-redux.min.js"></script>
+
+  <!-- Chakra UI CDN -->
+  <script src="https://unpkg.com/@chakra-ui/react@2.5.0/dist/chakra-ui-react.umd.min.js"></script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-chartjs-2"></script>
+
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useReducer, useContext, createContext } = React;
+    const { ChakraProvider, Box, Button, Input, Text, Textarea, FormControl, FormLabel, Select } = ChakraUI;
+    const { Bar } = ReactChartjs2;
+
+    // Redux Setup
+    const ADD_FEEDBACK = 'ADD_FEEDBACK';
+
+    const addFeedback = (feedback) => ({
+      type: ADD_FEEDBACK,
+      payload: feedback,
+    });
+
+    const feedbackReducer = (state = [], action) => {
+      switch (action.type) {
+        case ADD_FEEDBACK:
+          return [...state, action.payload];
+        default:
+          return state;
+      }
+    };
+
+    // Redux Store
+    const store = Redux.createStore(feedbackReducer);
+
+    // Context for passing feedback data globally
+    const FeedbackContext = createContext();
+
+    // Feedback Form Component
+    const FeedbackForm = () => {
+      const { dispatch } = useContext(FeedbackContext);
+      const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        rating: '',
+        feedback: '',
+      });
+
+      const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
+      };
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!formData.name || !formData.email || !formData.rating || !formData.feedback) {
+          alert('Please fill out all fields');
+          return;
+        }
+        dispatch(addFeedback({ ...formData, date: new Date().toISOString() }));
+        setFormData({
+          name: '',
+          email: '',
+          rating: '',
+          feedback: '',
+        });
+      };
+
+      return (
+        <Box p={4} maxWidth="500px" mx="auto">
+          <Text fontSize="2xl" mb={4}>Submit Your Feedback</Text>
+          <FormControl mb={4}>
+            <FormLabel>Name</FormLabel>
+            <Input
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Enter your name"
+            />
+          </FormControl>
+          <FormControl mb={4}>
+            <FormLabel>Email</FormLabel>
+            <Input
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Enter your email"
+            />
+          </FormControl>
+          <FormControl mb={4}>
+            <FormLabel>Rating</FormLabel>
+            <Select
+              name="rating"
+              value={formData.rating}
+              onChange={handleChange}
+              placeholder="Select rating"
+            >
+              {[1, 2, 3, 4, 5].map((rating) => (
+                <option key={rating} value={rating}>
+                  {rating}
+                </option>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl mb={4}>
+            <FormLabel>Feedback</FormLabel>
+            <Textarea
+              name="feedback"
+              value={formData.feedback}
+              onChange={handleChange}
+              placeholder="Enter your feedback"
+            />
+          </FormControl>
+          <Button onClick={handleSubmit} colorScheme="teal">Submit</Button>
+        </Box>
+      );
+    };
+
+    // Feedback Dashboard Component (with Chart.js)
+    const FeedbackDashboard = () => {
+      const feedbackList = useContext(FeedbackContext);
+      const ratings = feedbackList.map((feedback) => feedback.rating);
+
+      const data = {
+        labels: ['1', '2', '3', '4', '5'],
+        datasets: [
+          {
+            label: 'Feedback Ratings',
+            data: [0, 0, 0, 0, 0],
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+          },
+        ],
+      };
+
+      ratings.forEach((rating) => {
+        data.datasets[0].data[rating - 1]++;
+      });
+
+      return (
+        <Box p={4}>
+          <Text fontSize="2xl" mb={4}>Feedback Dashboard</Text>
+          <Bar data={data} />
+        </Box>
+      );
+    };
+
+    // App Component (with Routing and Redux Context)
+    const App = () => {
+      return (
+        <ChakraProvider>
+          <FeedbackContext.Provider value={store.getState()}>
+            <Box p={5}>
+              <FeedbackForm />
+              <FeedbackDashboard />
+            </Box>
+          </FeedbackContext.Provider>
+        </ChakraProvider>
+      );
+    };
+
+    // Render the application
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
